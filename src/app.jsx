@@ -9,9 +9,15 @@ import { CONSTANTS } from './utils/core';
 
 // Import domain managers
 import { initializeOrganismSystem } from './organism/organism-manager';
-import { initializeEvolutionSystem } from './evolution/evolution-manager';
-import { initializeSimulation, startSimulation, stopSimulation, resetSimulation } from './simulation/simulation-manager';
-import { initializeUI, renderSimulation } from './ui/ui-manager';
+import { initializeEvolutionSystem, setMutationRate } from './evolution/evolution-manager';
+import { 
+  initializeSimulation, 
+  startSimulation, 
+  stopSimulation, 
+  resetSimulation,
+  setEnvironmentBoundaries
+} from './simulation/simulation-manager';
+import { initializeUI, renderSimulation, setCanvasDimensions } from './ui/ui-manager';
 import { initializeDataTracking, getStatistics } from './data/data-manager';
 
 function App() {
@@ -19,7 +25,10 @@ function App() {
     isInitialized: false,
     isRunning: false,
     simulationSpeed: CONSTANTS.SIMULATION.DEFAULT_SPEED,
-    statistics: null
+    populationSize: CONSTANTS.SIMULATION.DEFAULT_POPULATION_SIZE,
+    mutationRate: CONSTANTS.EVOLUTION.DEFAULT_MUTATION_RATE,
+    statistics: null,
+    selectedOrganism: null
   });
 
   /**
@@ -41,13 +50,32 @@ function App() {
       initializeEvolutionSystem();
       initializeDataTracking();
       
+      // Set up environment dimensions
+      const canvasContainer = document.getElementById('simulation-container');
+      let canvasWidth = CONSTANTS.CANVAS.DEFAULT_WIDTH;
+      let canvasHeight = CONSTANTS.CANVAS.DEFAULT_HEIGHT;
+      
+      if (canvasContainer) {
+        canvasWidth = canvasContainer.clientWidth;
+        canvasHeight = Math.min(window.innerHeight * 0.6, canvasContainer.clientWidth * 0.75);
+      }
+      
+      // Set environment boundaries to match canvas
+      setEnvironmentBoundaries(canvasWidth, canvasHeight);
+      
       // Initialize UI after other systems
       initializeUI({
         onStart: handleStartSimulation,
         onStop: handleStopSimulation,
         onReset: handleResetSimulation,
-        onSpeedChange: handleSpeedChange
+        onSpeedChange: handleSpeedChange,
+        onPopulationSizeChange: handlePopulationSizeChange,
+        onMutationRateChange: handleMutationRateChange,
+        onOrganismSelect: handleOrganismSelect
       });
+      
+      // Set canvas dimensions
+      setCanvasDimensions(canvasWidth, canvasHeight);
       
       // Initialize simulation last, as it depends on the other systems
       initializeSimulation();
@@ -59,8 +87,34 @@ function App() {
       }));
 
       console.log('Evolution Morphology Simulator initialized successfully');
+      
+      // Handle window resize
+      window.addEventListener('resize', handleWindowResize);
+      
+      // Clean up event listener on unmount
+      return () => {
+        window.removeEventListener('resize', handleWindowResize);
+      };
     } catch (error) {
       console.error('Failed to initialize application:', error);
+    }
+  };
+
+  /**
+   * Handles window resize events
+   */
+  const handleWindowResize = () => {
+    const canvasContainer = document.getElementById('simulation-container');
+    
+    if (canvasContainer) {
+      const canvasWidth = canvasContainer.clientWidth;
+      const canvasHeight = Math.min(window.innerHeight * 0.6, canvasContainer.clientWidth * 0.75);
+      
+      // Update canvas dimensions
+      setCanvasDimensions(canvasWidth, canvasHeight);
+      
+      // Update environment boundaries
+      setEnvironmentBoundaries(canvasWidth, canvasHeight);
     }
   };
 
@@ -98,7 +152,8 @@ function App() {
     resetSimulation();
     setSimulationState(prevState => ({
       ...prevState,
-      statistics: getStatistics()
+      statistics: getStatistics(),
+      selectedOrganism: null
     }));
   };
 
@@ -123,6 +178,58 @@ function App() {
   };
 
   /**
+   * Updates the population size for resets
+   * @param {number} size - The new population size
+   */
+  const handlePopulationSizeChange = (size) => {
+    const clampedSize = Math.max(1, Math.min(200, size));
+    
+    setSimulationState(prevState => ({
+      ...prevState,
+      populationSize: clampedSize
+    }));
+    
+    // Population size is applied on reset
+  };
+
+  /**
+   * Updates the mutation rate
+   * @param {number} rate - The new mutation rate
+   */
+  const handleMutationRateChange = (rate) => {
+    const clampedRate = Math.max(0, Math.min(CONSTANTS.EVOLUTION.MAX_MUTATION_RATE, rate));
+    
+    setSimulationState(prevState => ({
+      ...prevState,
+      mutationRate: clampedRate
+    }));
+    
+    // Update the evolution system
+    setMutationRate(clampedRate);
+  };
+
+  /**
+   * Handles organism selection for details view
+   * @param {Object} organism - The selected organism
+   */
+  const handleOrganismSelect = (organism) => {
+    setSimulationState(prevState => ({
+      ...prevState,
+      selectedOrganism: organism
+    }));
+  };
+
+  /**
+   * Closes the organism detail panel
+   */
+  const handleCloseOrganismDetails = () => {
+    setSimulationState(prevState => ({
+      ...prevState,
+      selectedOrganism: null
+    }));
+  };
+
+  /**
    * Updates simulation statistics periodically
    */
   useEffect(() => {
@@ -140,13 +247,23 @@ function App() {
 
   return (
     <div className="evolution-simulator">
-      {/* 
-        The actual UI components will be managed by the UI domain.
-        The App component just serves as the entry point and coordinator.
-        It doesn't directly implement UI components.
-      */}
-      <div id="simulation-container">
-        {/* Canvas will be rendered here by the UI manager */}
+      <header className="app-header">
+        <h1 className="app-title">Evolution Morphology Simulator</h1>
+        <p className="app-subtitle">Observe and experiment with digital organisms evolving over time</p>
+      </header>
+      
+      <div className="app-content">
+        <div className="simulation-view">
+          <div id="simulation-container">
+            {/* Canvas will be rendered here by the UI manager */}
+          </div>
+        </div>
+        
+        <div className="simulation-controls">
+          <div id="control-panel">
+            {/* Controls will be rendered here by the UI manager */}
+          </div>
+        </div>
       </div>
     </div>
   );

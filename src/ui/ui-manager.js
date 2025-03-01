@@ -11,9 +11,17 @@ import { CONSTANTS } from '../utils/core';
 import { getAllOrganisms } from '../organism/organism-manager';
 import { getEnvironment } from '../simulation/simulation-manager';
 import { getStatistics } from '../data/data-manager';
+import { 
+  initializeRenderer, 
+  clearCanvas, 
+  renderOrganism, 
+  renderResource,
+  setCanvasDimensions as setCanvasRendererDimensions,
+  getCanvasDimensions
+} from './canvas-renderer';
 
 // Internal state
-let canvasContext = null;
+let canvasElement = null;
 let controlCallbacks = {
   onStart: null,
   onStop: null,
@@ -68,12 +76,10 @@ function initializeCanvas() {
     }
   }
   
-  // Get the canvas context
-  canvasContext = canvas.getContext('2d');
+  canvasElement = canvas;
   
-  // Initial canvas setup
-  canvasContext.fillStyle = CONSTANTS.CANVAS.BACKGROUND_COLOR;
-  canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+  // Initialize the canvas renderer
+  initializeRenderer(canvas);
   
   console.log('Canvas initialized with dimensions:', canvas.width, 'x', canvas.height);
 }
@@ -82,9 +88,6 @@ function initializeCanvas() {
  * Initializes the control panel
  */
 function initializeControlPanel() {
-  // In the Foundation Phase, we'll inject a simple set of controls into the DOM
-  // In a full implementation, this would be a React component
-  
   // Create control panel if it doesn't exist
   let controlPanel = document.getElementById('control-panel');
   if (!controlPanel) {
@@ -161,109 +164,30 @@ function initializeControlPanel() {
  * Refreshes the canvas with the current simulation state
  */
 export function refreshCanvas() {
-  if (!canvasContext) {
-    console.error('Cannot refresh canvas: context not initialized');
+  if (!canvasElement) {
+    console.error('Cannot refresh canvas: canvas element not initialized');
     return;
   }
   
-  const canvas = canvasContext.canvas;
-  
   // Clear canvas
-  canvasContext.fillStyle = CONSTANTS.CANVAS.BACKGROUND_COLOR;
-  canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+  clearCanvas();
   
   // Get current state
   const organisms = getAllOrganisms();
   const environment = getEnvironment();
   
   // Draw resources
-  drawResources(environment.resources);
+  environment.resources.forEach(resource => {
+    renderResource(resource);
+  });
   
   // Draw organisms
-  drawOrganisms(organisms);
+  organisms.forEach(organism => {
+    renderOrganism(organism);
+  });
   
   // Update statistics display
   updateStatsDisplay();
-}
-
-/**
- * Draws resources on the canvas
- * @param {Array} resources - Array of resource objects
- */
-function drawResources(resources) {
-  if (!canvasContext || !resources) return;
-  
-  canvasContext.fillStyle = '#8BC34A'; // Green for resources
-  
-  resources.forEach(resource => {
-    canvasContext.beginPath();
-    canvasContext.arc(
-      resource.position.x,
-      resource.position.y,
-      3, // Resource size
-      0,
-      Math.PI * 2
-    );
-    canvasContext.fill();
-  });
-}
-
-/**
- * Draws organisms on the canvas
- * @param {Array} organisms - Array of organism objects
- */
-function drawOrganisms(organisms) {
-  if (!canvasContext || !organisms) return;
-  
-  organisms.forEach(organism => {
-    // Map genome values to visual properties
-    const size = mapGenomeToSize(organism.genome.bodySize?.value || 0.5);
-    const hue = mapGenomeToColor(organism.genome.bodyShape?.value || 0.5);
-    
-    // Draw body
-    canvasContext.fillStyle = `hsl(${hue}, 70%, 50%)`;
-    canvasContext.beginPath();
-    canvasContext.arc(
-      organism.state.position.x,
-      organism.state.position.y,
-      size,
-      0,
-      Math.PI * 2
-    );
-    canvasContext.fill();
-    
-    // Draw direction indicator (simple line)
-    const angle = Math.atan2(organism.state.velocity.y, organism.state.velocity.x);
-    canvasContext.strokeStyle = 'black';
-    canvasContext.beginPath();
-    canvasContext.moveTo(organism.state.position.x, organism.state.position.y);
-    canvasContext.lineTo(
-      organism.state.position.x + Math.cos(angle) * (size + 5),
-      organism.state.position.y + Math.sin(angle) * (size + 5)
-    );
-    canvasContext.stroke();
-    
-    // Draw any appendages here in the future
-  });
-}
-
-/**
- * Maps genome body size value to visual size
- * @param {number} value - Normalized genome value (0-1)
- * @returns {number} Visual size in pixels
- */
-function mapGenomeToSize(value) {
-  return CONSTANTS.ORGANISM.MIN_SIZE + 
-    value * (CONSTANTS.ORGANISM.MAX_SIZE - CONSTANTS.ORGANISM.MIN_SIZE);
-}
-
-/**
- * Maps genome body shape value to color hue
- * @param {number} value - Normalized genome value (0-1)
- * @returns {number} Hue value (0-360)
- */
-function mapGenomeToColor(value) {
-  return value * 360; // Map 0-1 to 0-360 hue
 }
 
 /**
@@ -286,6 +210,7 @@ function updateStatsDisplay() {
     statsHtml += `<p>Body Size: ${statistics.averageStats.bodySize.toFixed(2)}</p>`;
     statsHtml += `<p>Body Shape: ${statistics.averageStats.bodyShape.toFixed(2)}</p>`;
     statsHtml += `<p>Metabolism: ${statistics.averageStats.metabolism.toFixed(2)}</p>`;
+    statsHtml += `<p>Speed: ${statistics.averageStats.speed?.toFixed(2) || 'N/A'}</p>`;
   }
   
   // Update the display
@@ -298,15 +223,18 @@ function updateStatsDisplay() {
  * @param {number} height - Canvas height
  */
 export function setCanvasDimensions(width, height) {
-  const canvas = document.getElementById('simulation-canvas');
-  if (canvas) {
-    canvas.width = width || CONSTANTS.CANVAS.DEFAULT_WIDTH;
-    canvas.height = height || CONSTANTS.CANVAS.DEFAULT_HEIGHT;
+  if (canvasElement) {
+    // Update canvas element dimensions
+    canvasElement.width = width || CONSTANTS.CANVAS.DEFAULT_WIDTH;
+    canvasElement.height = height || CONSTANTS.CANVAS.DEFAULT_HEIGHT;
+    
+    // Update canvas renderer dimensions
+    setCanvasRendererDimensions(canvasElement.width, canvasElement.height);
     
     // Refresh canvas with new dimensions
     refreshCanvas();
     
-    console.log('Canvas dimensions updated:', canvas.width, 'x', canvas.height);
+    console.log('Canvas dimensions updated:', canvasElement.width, 'x', canvasElement.height);
   }
 }
 
@@ -315,6 +243,6 @@ export function setCanvasDimensions(width, height) {
  * @param {Object} state - Current simulation state
  */
 export function renderSimulation(state) {
-  // Simplified version for Foundation Phase
+  // Delegate to refreshCanvas for rendering
   refreshCanvas();
 }

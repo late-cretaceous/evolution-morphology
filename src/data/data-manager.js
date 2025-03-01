@@ -106,8 +106,11 @@ function calculateAverageStats(organisms) {
       bodyShape: 0,
       metabolism: 0,
       sensorRange: 0,
+      speed: 0,
+      turnRate: 0,
       energy: 0,
-      age: 0
+      age: 0,
+      appendageCount: 0
     };
   }
   
@@ -117,17 +120,54 @@ function calculateAverageStats(organisms) {
     bodyShape: 0,
     metabolism: 0,
     sensorRange: 0,
+    speed: 0,
+    turnRate: 0,
     energy: 0,
-    age: 0
+    age: 0,
+    appendageCount: 0
+  };
+  
+  // Count organisms with different appendage types
+  const appendageTypes = {
+    fin: 0,
+    flagella: 0
   };
   
   // Sum values
   organisms.forEach(organism => {
-    if (organism.genome.bodySize) sums.bodySize += organism.genome.bodySize.value || 0;
-    if (organism.genome.bodyShape) sums.bodyShape += organism.genome.bodyShape.value || 0;
-    if (organism.genome.metabolism) sums.metabolism += organism.genome.metabolism.value || 0;
-    if (organism.genome.sensorRange) sums.sensorRange += organism.genome.sensorRange.value || 0;
+    // Sum genome values
+    if (organism.genome) {
+      if (organism.genome.bodySize) sums.bodySize += organism.genome.bodySize.value || 0;
+      if (organism.genome.bodyShape) sums.bodyShape += organism.genome.bodyShape.value || 0;
+      if (organism.genome.metabolism) sums.metabolism += organism.genome.metabolism.value || 0;
+      if (organism.genome.sensorRange) sums.sensorRange += organism.genome.sensorRange.value || 0;
+      if (organism.genome.speed) sums.speed += organism.genome.speed.value || 0;
+      if (organism.genome.turnRate) sums.turnRate += organism.genome.turnRate.value || 0;
+    }
     
+    // Sum phenotype values where genome isn't available
+    if (organism.phenotype) {
+      if (!organism.genome?.bodySize && organism.phenotype.bodySize) sums.bodySize += organism.phenotype.bodySize;
+      if (!organism.genome?.bodyShape && organism.phenotype.bodyShape) sums.bodyShape += organism.phenotype.bodyShape;
+      if (!organism.genome?.metabolism && organism.phenotype.metabolism) sums.metabolism += organism.phenotype.metabolism;
+      if (!organism.genome?.sensorRange && organism.phenotype.sensorRange) sums.sensorRange += organism.phenotype.sensorRange;
+      if (!organism.genome?.speed && organism.phenotype.speed) sums.speed += organism.phenotype.speed;
+      if (!organism.genome?.turnRate && organism.phenotype.turnRate) sums.turnRate += organism.phenotype.turnRate;
+      
+      // Count appendages
+      if (organism.phenotype.appendages) {
+        sums.appendageCount += organism.phenotype.appendages.length;
+        
+        // Count appendage types
+        organism.phenotype.appendages.forEach(app => {
+          if (app.type && appendageTypes[app.type] !== undefined) {
+            appendageTypes[app.type]++;
+          }
+        });
+      }
+    }
+    
+    // Sum state values
     if (organism.state) {
       sums.energy += organism.state.energy || 0;
       sums.age += organism.state.age || 0;
@@ -136,14 +176,23 @@ function calculateAverageStats(organisms) {
   
   // Calculate averages
   const count = organisms.length;
-  return {
+  const averages = {
     bodySize: sums.bodySize / count,
     bodyShape: sums.bodyShape / count,
     metabolism: sums.metabolism / count,
     sensorRange: sums.sensorRange / count,
+    speed: sums.speed / count,
+    turnRate: sums.turnRate / count,
     energy: sums.energy / count,
-    age: sums.age / count
+    age: sums.age / count,
+    appendageCount: sums.appendageCount / count,
+    appendageTypes: {
+      fin: appendageTypes.fin / count,
+      flagella: appendageTypes.flagella / count
+    }
   };
+  
+  return averages;
 }
 
 /**

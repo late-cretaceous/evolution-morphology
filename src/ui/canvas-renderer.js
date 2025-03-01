@@ -5,8 +5,7 @@
  * @private Should only be used by ui-manager.js
  */
 
-import { CONSTANTS } from '../utils/core';
-import { mapRange } from '../utils/math-utils';
+import { CONSTANTS, mapRange } from '../utils/core';
 
 // Internal canvas state
 let canvas = null;
@@ -83,6 +82,18 @@ export function renderOrganism(organism) {
     energyBarWidth * Math.min(1, energyRatio),
     energyBarHeight
   );
+  
+  // Draw direction indicator (simple line)
+  const angle = Math.atan2(organism.state.velocity.y, organism.state.velocity.x);
+  context.strokeStyle = 'black';
+  context.lineWidth = 1;
+  context.beginPath();
+  context.moveTo(position.x, position.y);
+  context.lineTo(
+    position.x + Math.cos(angle) * (size + 5),
+    position.y + Math.sin(angle) * (size + 5)
+  );
+  context.stroke();
   
   // Draw appendages if any
   if (organism.phenotype.appendages && organism.phenotype.appendages.length > 0) {

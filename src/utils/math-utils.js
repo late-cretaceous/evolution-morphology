@@ -114,3 +114,73 @@ export function midpoint(point1, point2) {
     y: (point1.y + point2.y) / 2
   };
 }
+
+/**
+ * Calculates the dot product of two vectors
+ * @param {Object} v1 - The first vector with x and y components
+ * @param {Object} v2 - The second vector with x and y components
+ * @returns {number} The dot product
+ */
+export function dotProduct(v1, v2) {
+  return v1.x * v2.x + v1.y * v2.y;
+}
+
+/**
+ * Calculates the cross product of two vectors (2D, returns scalar)
+ * @param {Object} v1 - The first vector with x and y components
+ * @param {Object} v2 - The second vector with x and y components
+ * @returns {number} The cross product (scalar in 2D)
+ */
+export function crossProduct(v1, v2) {
+  return v1.x * v2.y - v1.y * v2.x;
+}
+
+/**
+ * Normalizes a vector to unit length
+ * @param {Object} vector - The vector to normalize with x and y components
+ * @returns {Object} The normalized vector
+ */
+export function normalizeVector(vector) {
+  const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+  
+  // Prevent division by zero
+  if (magnitude === 0) {
+    return { x: 0, y: 0 };
+  }
+  
+  return {
+    x: vector.x / magnitude,
+    y: vector.y / magnitude
+  };
+}
+
+/**
+ * Calculates the magnitude (length) of a vector
+ * @param {Object} vector - The vector with x and y components
+ * @returns {number} The magnitude of the vector
+ */
+export function vectorMagnitude(vector) {
+  return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+}
+
+/**
+ * Creates a vector from an angle and magnitude
+ * @param {number} angle - The angle in radians
+ * @param {number} magnitude - The magnitude (length) of the vector
+ * @returns {Object} The vector with x and y components
+ */
+export function vectorFromAngle(angle, magnitude) {
+  return {
+    x: Math.cos(angle) * magnitude,
+    y: Math.sin(angle) * magnitude
+  };
+}
+
+/**
+ * Calculates the angle of a vector
+ * @param {Object} vector - The vector with x and y components
+ * @returns {number} The angle in radians
+ */
+export function vectorAngle(vector) {
+  return Math.atan2(vector.y, vector.x);
+}

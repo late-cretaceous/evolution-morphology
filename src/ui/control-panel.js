@@ -191,6 +191,16 @@ export function StatisticsDisplay({ statistics }) {
             </div>
             
             <div className="stat-item">
+              <div className="stat-label">Speed</div>
+              <div className="stat-value">{averageStats.speed.toFixed(2)}</div>
+            </div>
+            
+            <div className="stat-item">
+              <div className="stat-label">Turn Rate</div>
+              <div className="stat-value">{averageStats.turnRate.toFixed(2)}</div>
+            </div>
+            
+            <div className="stat-item">
               <div className="stat-label">Avg. Energy</div>
               <div className="stat-value">{averageStats.energy.toFixed(1)}</div>
             </div>
@@ -199,9 +209,131 @@ export function StatisticsDisplay({ statistics }) {
               <div className="stat-label">Avg. Age</div>
               <div className="stat-value">{averageStats.age.toFixed(1)}</div>
             </div>
+            
+            <div className="stat-item">
+              <div className="stat-label">Appendages</div>
+              <div className="stat-value">{averageStats.appendageCount.toFixed(1)}</div>
+            </div>
+          </div>
+          
+          <h4>Appendage Distribution</h4>
+          <div className="stats-grid">
+            <div className="stat-item">
+              <div className="stat-label">Fins</div>
+              <div className="stat-value">
+                {averageStats.appendageTypes?.fin
+                  ? (averageStats.appendageTypes.fin * populationSize).toFixed(0)
+                  : '0'
+                }
+              </div>
+            </div>
+            
+            <div className="stat-item">
+              <div className="stat-label">Flagella</div>
+              <div className="stat-value">
+                {averageStats.appendageTypes?.flagella
+                  ? (averageStats.appendageTypes.flagella * populationSize).toFixed(0)
+                  : '0'
+                }
+              </div>
+            </div>
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+/**
+ * Creates the organism detail panel component
+ * @param {Object} props - Component properties
+ * @param {Object} props.organism - The selected organism
+ * @param {Function} props.onClose - Handler for closing the panel
+ * @returns {JSX.Element} The organism detail panel component
+ */
+export function OrganismDetailPanel({ organism, onClose }) {
+  if (!organism) {
+    return null;
+  }
+  
+  return (
+    <div className="organism-detail-panel">
+      <div className="detail-panel-header">
+        <h3>Organism Details</h3>
+        <button onClick={onClose} className="close-button">×</button>
+      </div>
+      
+      <div className="detail-section">
+        <h4>Basic Information</h4>
+        <div className="info-row">
+          <span>ID:</span>
+          <span>{organism.id.substring(0, 8)}...</span>
+        </div>
+        <div className="info-row">
+          <span>Age:</span>
+          <span>{organism.state.age.toFixed(1)}s</span>
+        </div>
+        <div className="info-row">
+          <span>Energy:</span>
+          <span>{organism.state.energy.toFixed(1)}</span>
+        </div>
+      </div>
+      
+      <div className="detail-section">
+        <h4>Physical Traits</h4>
+        <div className="info-row">
+          <span>Body Size:</span>
+          <span>{organism.phenotype.bodySize.toFixed(2)}</span>
+        </div>
+        <div className="info-row">
+          <span>Body Shape:</span>
+          <span>{organism.phenotype.bodyShape.toFixed(2)}</span>
+        </div>
+        <div className="info-row">
+          <span>Metabolism:</span>
+          <span>{organism.phenotype.metabolism.toFixed(2)}</span>
+        </div>
+      </div>
+      
+      <div className="detail-section">
+        <h4>Behavioral Traits</h4>
+        <div className="info-row">
+          <span>Speed:</span>
+          <span>{organism.phenotype.speed.toFixed(2)}</span>
+        </div>
+        <div className="info-row">
+          <span>Turn Rate:</span>
+          <span>{organism.phenotype.turnRate.toFixed(2)}</span>
+        </div>
+        <div className="info-row">
+          <span>Sensor Range:</span>
+          <span>{organism.phenotype.sensorRange.toFixed(2)}</span>
+        </div>
+      </div>
+      
+      <div className="detail-section">
+        <h4>Appendages ({organism.phenotype.appendages.length})</h4>
+        {organism.phenotype.appendages.map((app, index) => (
+          <div key={index} className="appendage-info">
+            <div className="info-row">
+              <span>Type:</span>
+              <span>{app.type}</span>
+            </div>
+            <div className="info-row">
+              <span>Length:</span>
+              <span>{app.length.toFixed(2)}</span>
+            </div>
+            <div className="info-row">
+              <span>Position:</span>
+              <span>{app.position.toFixed(2)}</span>
+            </div>
+            <div className="info-row">
+              <span>Angle:</span>
+              <span>{app.angle.toFixed(2)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -213,7 +345,7 @@ export function StatisticsDisplay({ statistics }) {
  */
 function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+  const secs = Math.floor(seconds % 60);
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
@@ -317,5 +449,56 @@ export const controlPanelStyles = {
   statValue: {
     fontWeight: 'bold',
     fontSize: '16px'
+  },
+  
+  organismDetailPanel: {
+    position: 'absolute',
+    top: '20px',
+    right: '20px',
+    width: '250px',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    border: '1px solid #dee2e6',
+    borderRadius: '4px',
+    padding: '15px',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+    fontSize: '14px',
+    maxHeight: '80vh',
+    overflow: 'auto',
+    zIndex: 10
+  },
+  
+  detailPanelHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '10px',
+    paddingBottom: '8px',
+    borderBottom: '1px solid #eee'
+  },
+  
+  closeButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '20px',
+    cursor: 'pointer',
+    color: '#666'
+  },
+  
+  detailSection: {
+    marginBottom: '15px'
+  },
+  
+  infoRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '4px 0',
+    borderBottom: '1px dotted #eee'
+  },
+  
+  appendageInfo: {
+    margin: '5px 0',
+    padding: '8px',
+    backgroundColor: '#f0f7ff',
+    borderRadius: '4px'
   }
 };

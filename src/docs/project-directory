@@ -6,6 +6,10 @@
 │   │   └── react.svg
 │   ├── data
 │   │   └── data-manager.js
+│   ├── docs
+│   │   ├── architectural-guidelines.md
+│   │   ├── evolution-project-plan.md
+│   │   └── project-directory
 │   ├── evolution
 │   │   └── evolution-manager.js
 │   ├── organism
@@ -24,10 +28,11 @@
 │   ├── index-js.js
 │   ├── index.css
 │   ├── main.jsx
-│   └── styles-css.css
+│   ├── styles-css.css
+│   └── styles.css
 ├── eslint.config.js
 ├── index.html
 ├── package-lock.json
 ├── package.json
 ├── README.md
-└── vite.config.j
+└── vite.config.js

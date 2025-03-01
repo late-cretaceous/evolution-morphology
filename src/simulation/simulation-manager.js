@@ -73,8 +73,6 @@ function initializeEnvironment() {
 function generateResources() {
   environment.resources = [];
   
-  // This will be implemented in the Simulation Phase
-  // For now, just placeholder logic
   const resourceCount = Math.floor(environment.parameters.maxResources / 2);
   
   for (let i = 0; i < resourceCount; i++) {
@@ -180,8 +178,28 @@ function updateSimulation(deltaTime) {
  * @param {number} deltaTime - Time elapsed since last update
  */
 function updateResources(deltaTime) {
-  // This will be implemented in the Simulation Phase
-  // For now, just a placeholder
+  // Regenerate resources over time
+  if (environment.resources.length < environment.parameters.maxResources) {
+    // Calculate how many resources to add based on regeneration rate
+    const resourcesNeeded = environment.parameters.maxResources - environment.resources.length;
+    const resourcesToAdd = Math.min(
+      resourcesNeeded,
+      Math.random() < environment.parameters.resourceRegenerationRate * deltaTime ? 1 : 0
+    );
+    
+    // Add new resources
+    for (let i = 0; i < resourcesToAdd; i++) {
+      environment.resources.push({
+        id: `resource-${Date.now()}-${i}`,
+        type: 'food',
+        position: {
+          x: Math.random() * environment.boundaries.width,
+          y: Math.random() * environment.boundaries.height
+        },
+        value: CONSTANTS.RESOURCE.DEFAULT_VALUE
+      });
+    }
+  }
 }
 
 /**

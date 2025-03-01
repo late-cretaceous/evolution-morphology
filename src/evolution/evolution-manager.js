@@ -5,7 +5,7 @@
  * @responsibility Manages evolution processes, mutation, selection and reproduction
  */
 
-import { CONSTANTS, generateId } from '../utils/core';
+import { CONSTANTS, generateId, deepClone } from '../utils/core';
 import { random, gaussian } from '../utils/math-utils';
 import { createOrganism, getOrganismById, removeOrganism } from '../organism/organism-manager';
 
@@ -76,6 +76,9 @@ export function reproduceOrganism(parentId) {
   // Calculate energy transfer
   const energyTransfer = parent.state.energy * CONSTANTS.ORGANISM.ENERGY_TRANSFER_RATIO;
   
+  // Reduce parent's energy
+  const updatedParentEnergy = parent.state.energy * (1 - CONSTANTS.ORGANISM.ENERGY_TRANSFER_RATIO);
+  
   // Create offspring at slightly offset position
   const offspring = createOrganism({
     genome: offspringGenome,
@@ -88,10 +91,17 @@ export function reproduceOrganism(parentId) {
     }
   });
   
-  // Update parent energy
-  // This would normally be handled by organism-manager in a real implementation
-  // For the Foundation Phase, this is just a placeholder
-  console.log(`Organism ${parentId} reproduced, creating organism ${offspring.id}`);
+  // Update parent energy by creating a new organism with updated energy
+  const updatedParent = createOrganism({
+    ...parent,
+    state: {
+      ...parent.state,
+      energy: updatedParentEnergy
+    }
+  });
+  
+  // Remove the original parent
+  removeOrganism(parentId);
   
   // Increment generation count when reproduction occurs
   generationCount++;
@@ -105,10 +115,8 @@ export function reproduceOrganism(parentId) {
  * @returns {Object} A mutated copy of the genome
  */
 function mutateGenome(genome) {
-  // This is a simplified placeholder for the Foundation Phase
-  // More complex mutation logic will be implemented in the Evolution Phase
-  
-  const mutatedGenome = { ...genome };
+  // Create a deep clone of the genome to avoid modifying the original
+  const mutatedGenome = deepClone(genome);
   
   // Mutate basic properties
   Object.keys(mutatedGenome).forEach(key => {
@@ -123,6 +131,47 @@ function mutateGenome(genome) {
     }
   });
   
+  // Mutate appendages
+  if (mutatedGenome.appendages && mutatedGenome.appendages.length > 0) {
+    // Loop through each appendage and mutate its properties
+    mutatedGenome.appendages.forEach(appendage => {
+      Object.keys(appendage).forEach(key => {
+        if (key !== 'type' && typeof appendage[key] === 'object' && appendage[key].value !== undefined) {
+          // Apply mutation based on the gene's mutation rate and global mutation rate
+          if (Math.random() < appendage[key].mutationRate * mutationRate) {
+            // Use gaussian distribution for more realistic mutations
+            appendage[key].value = Math.max(0, Math.min(1,
+              appendage[key].value + gaussian(0, 0.1)
+            ));
+          }
+        }
+      });
+      
+      // Small chance to change appendage type
+      if (Math.random() < mutationRate * 0.1) {
+        appendage.type = appendage.type === 'fin' ? 'flagella' : 'fin';
+      }
+    });
+  }
+  
+  // Chance to add a new appendage
+  if (mutatedGenome.appendages.length < 3 && Math.random() < mutationRate * 0.2) {
+    const appendageType = Math.random() > 0.5 ? "fin" : "flagella";
+    
+    mutatedGenome.appendages.push({
+      type: appendageType,
+      length: { value: random(0.3, 0.8), mutationRate: 0.05 },
+      position: { value: random(0, 1), mutationRate: 0.02 },
+      angle: { value: random(0, 1), mutationRate: 0.04 }
+    });
+  }
+  
+  // Chance to remove an appendage
+  if (mutatedGenome.appendages.length > 0 && Math.random() < mutationRate * 0.1) {
+    const index = Math.floor(Math.random() * mutatedGenome.appendages.length);
+    mutatedGenome.appendages.splice(index, 1);
+  }
+  
   return mutatedGenome;
 }
 
@@ -132,7 +181,51 @@ function mutateGenome(genome) {
  * @param {Function} fitnessFunction - Function to calculate fitness
  */
 export function applySelection(organisms, fitnessFunction) {
-  // This will be implemented in the Evolution Phase
-  // For now, just a placeholder
-  console.log(`Applying selection to ${organisms.length} organisms`);
+  // For the Organism Phase, we'll automatically reproduce organisms
+  // that have enough energy
+  const allOrganisms = organisms || [];
+  
+  allOrganisms.forEach(organism => {
+    // Check if organism has enough energy to reproduce
+    if (organism.state && organism.state.energy >= CONSTANTS.ORGANISM.REPRODUCTION_ENERGY_THRESHOLD) {
+      reproduceOrganism(organism.id);
+    }
+  });
+}
+
+/**
+ * Calculates fitness for a given organism
+ * @param {Object} organism - The organism to evaluate
+ * @returns {number} Fitness score
+ */
+export function calculateOrganismFitness(organism) {
+  if (!organism) return 0;
+  
+  // Calculate a weighted fitness score based on various factors
+  
+  // Energy efficiency: how efficiently the organism gathers energy
+  const energyScore = organism.state.energy / CONSTANTS.ORGANISM.REPRODUCTION_ENERGY_THRESHOLD;
+  
+  // Metabolic efficiency: lower metabolism means less energy consumption
+  const metabolismScore = 1 - organism.phenotype.metabolism;
+  
+  // Sensory capability: better sensors help find resources
+  const sensorScore = organism.phenotype.sensorRange;
+  
+  // Movement efficiency: balance between speed and energy cost
+  const movementScore = organism.phenotype.speed * (1 - organism.phenotype.metabolism);
+  
+  // Age bonus: surviving longer is a sign of fitness
+  const ageScore = Math.min(1, organism.state.age / 100);
+  
+  // Weighted sum of different fitness components
+  const fitnessScore = (
+    energyScore * 0.4 +
+    metabolismScore * 0.2 +
+    sensorScore * 0.1 +
+    movementScore * 0.2 +
+    ageScore * 0.1
+  );
+  
+  return fitnessScore;
 }
