@@ -1,0 +1,272 @@
+/* Base styles for the Evolution Morphology Simulator */
+
+/* Global reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 
+    'Open Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  color: #333;
+  background-color: #f9f9f9;
+  padding: 20px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 10px;
+}
+
+/* Main application container */
+.evolution-simulator {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Application header */
+.app-header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.app-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.app-subtitle {
+  font-size: 16px;
+  color: #7f8c8d;
+}
+
+/* Main content layout */
+.app-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .app-content {
+    flex-direction: row;
+  }
+  
+  .simulation-view {
+    flex: 2;
+  }
+  
+  .simulation-controls {
+    flex: 1;
+  }
+}
+
+/* Simulation container */
+#simulation-container {
+  margin-bottom: 20px;
+}
+
+/* Canvas styling */
+#simulation-canvas {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: block;
+  margin: 0 auto;
+  background-color: #f0f0f0;
+}
+
+/* Control panel */
+#control-panel {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+/* Button styles */
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin-right: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background-color: #4CAF50;
+}
+
+button.secondary {
+  background-color: #2196F3;
+}
+
+button.danger {
+  background-color: #f44336;
+}
+
+/* Form controls */
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin: 10px 0;
+}
+
+input[type="number"] {
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 60px;
+}
+
+/* Statistics display */
+#stats-display {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 15px;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-weight: 500;
+}
+
+.stat-value {
+  font-family: monospace;
+}
+
+/* Control panel components from control-panel.js */
+.control-panel {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+  background-color: #f8f9fa;
+}
+
+.control-section {
+  margin-bottom: 15px;
+}
+
+.control-button {
+  padding: 8px 16px;
+  margin-right: 10px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.control-button.primary {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.control-button.secondary {
+  background-color: #FF9800;
+  color: white;
+}
+
+.control-button.danger {
+  background-color: #F44336;
+  color: white;
+}
+
+.control-button.disabled {
+  background-color: #e0e0e0;
+  color: #a0a0a0;
+  cursor: not-allowed;
+}
+
+.control-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.slider {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.range-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+}
+
+.number-input {
+  width: 60px;
+  padding: 5px;
+  margin-left: 10px;
+}
+
+.number-input.disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.statistics-panel {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 15px;
+  background-color: #f8f9fa;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.stat-item {
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #e9ecef;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  font-weight: bold;
+  font-size: 16px;
+}

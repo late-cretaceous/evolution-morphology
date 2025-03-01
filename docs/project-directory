@@ -1,0 +1,33 @@
+# 
+├── public
+│   └── vite.svg
+├── src
+│   ├── assets
+│   │   └── react.svg
+│   ├── data
+│   │   └── data-manager.js
+│   ├── evolution
+│   │   └── evolution-manager.js
+│   ├── organism
+│   │   └── organism-manager.js
+│   ├── simulation
+│   │   └── simulation-manager.js
+│   ├── ui
+│   │   ├── canvas-renderer.js
+│   │   ├── control-panel.js
+│   │   └── ui-manager.js
+│   ├── utils
+│   │   ├── core.js
+│   │   └── math-utils.js
+│   ├── App.css
+│   ├── app.jsx
+│   ├── index-js.js
+│   ├── index.css
+│   ├── main.jsx
+│   └── styles-css.css
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── README.md
+└── vite.config.j
