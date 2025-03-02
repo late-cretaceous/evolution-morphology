@@ -6,7 +6,7 @@
  */
 
 import { CONSTANTS } from '../utils/core';
-import { updateOrganisms, createInitialPopulation } from '../organism/organism-manager';
+import { updateOrganisms, createInitialPopulation, getAllOrganisms } from '../organism/organism-manager';
 import { applySelection } from '../evolution/evolution-manager';
 import { refreshCanvas } from '../ui/ui-manager';
 import { updateStatistics } from '../data/data-manager';
@@ -169,8 +169,8 @@ function updateSimulation(deltaTime) {
   // Update organisms
   updateOrganisms(deltaTime, environment);
   
-  // Apply selection pressure
-  applySelection([], calculateFitness);
+  // Apply selection pressure with all organisms and environment
+  applySelection(getAllOrganisms(), environment);
 }
 
 /**
@@ -200,17 +200,6 @@ function updateResources(deltaTime) {
       });
     }
   }
-}
-
-/**
- * Calculates fitness for an organism
- * @param {Object} organism - The organism to evaluate
- * @returns {number} Fitness score
- */
-function calculateFitness(organism) {
-  // This will be implemented in the Evolution Phase
-  // For now, return a dummy value
-  return 1.0;
 }
 
 /**
